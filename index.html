@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loopix</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: #020617;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Top bar */
+    .topbar {
+      width: 100%;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    .home {
+      font-size: 26px;
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #38bdf8;
+      text-shadow: 0 0 10px rgba(56,189,248,.6);
+    }
+
+    /* Controls */
+    .controls {
+      font-size: 32px;
+      margin: 10px 0 15px;
+      user-select: none;
+    }
+
+    .controls span {
+      cursor: pointer;
+      margin: 0 20px;
+    }
+
+    /* Player */
+    .player {
+      width: 100%;
+      max-width: 900px;
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .player iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      padding: 16px;
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="home" onclick="goHome()">🏠</div>
+    <div class="title">Loopix</div>
+    <div style="width:26px;"></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <span id="prev">⬅️</span>
+    <span id="next">➡️</span>
+  </div>
+
+  <!-- Player -->
+  <div class="player" id="player"></div>
+
+  <!-- Footer -->
+  <footer>
+    © 2026 Loopix · Built with ❤️ by YAN
+  </footer>
+
+<script>
+  const sheetCSV =
+    "https://docs.google.com/spreadsheets/d/1nbJcDsxQ8XtRLyoHcoJoJJSGiV_ja7J5r_pgiFFuKms/export?format=csv";
+
+  let videos = [];
+  let index = 0;
+
+  function goHome() {
+    window.location.href = "https://yan-shun-081.github.io/yan-1-website.com/";
+  }
+
+  fetch(sheetCSV)
+    .then(res => res.text())
+    .then(text => {
+      videos = text
+        .split("\n")
+        .map(row => row.replace(/"/g, "").trim())
+        .filter(row => row !== "");
+
+      if (videos.length) loadVideo(index);
+    });
+
+  function toEmbed(url) {
+    if (url.includes("dai.ly/")) {
+      const id = url.split("dai.ly/")[1];
+      return `https://geo.dailymotion.com/player.html?video=${id}`;
+    }
+    return url;
+  }
+
+  function loadVideo(i) {
+    const embedURL = toEmbed(videos[i]);
+
+    document.getElementById("player").innerHTML = `
+      <iframe
+        src="${embedURL}"
+        allowfullscreen
+        allow="autoplay; web-share"
+        title="Dailymotion Video">
+      </iframe>
+    `;
+  }
+
+  document.getElementById("next").onclick = () => {
+    if (index < videos.length - 1) {
+      index++;
+      loadVideo(index);
+    }
+  };
+
+  document.getElementById("prev").onclick = () => {
+    if (index > 0) {
+      index--;
+      loadVideo(index);
+    }
+  };
+</script>
+
+</body>
+</html>
