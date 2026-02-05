@@ -17,7 +17,6 @@
       min-height: 100vh;
     }
 
-    /* Top bar */
     .topbar {
       width: 100%;
       padding: 12px 16px;
@@ -38,7 +37,6 @@
       text-shadow: 0 0 10px rgba(56,189,248,.6);
     }
 
-    /* Controls */
     .controls {
       font-size: 30px;
       margin: 10px 0;
@@ -50,7 +48,6 @@
       margin: 0 18px;
     }
 
-    /* PLAYER – DESKTOP DEFAULT (16:9) */
     .player {
       width: 100%;
       max-width: 900px;
@@ -66,7 +63,6 @@
       border: none;
     }
 
-    /* Footer */
     footer {
       margin-top: auto;
       padding: 14px;
@@ -75,13 +71,12 @@
       text-align: center;
     }
 
-    /* 📱 MOBILE FIX — PORTRAIT VIDEO */
     @media (max-width: 768px) {
       .player {
         width: 92%;
         max-width: none;
-        aspect-ratio: 9 / 16;          /* 🔥 KEY FIX */
-        height: calc(100vh - 220px);   /* Fill screen nicely */
+        aspect-ratio: 9 / 16;
+        height: calc(100vh - 220px);
         border-radius: 18px;
       }
 
@@ -97,23 +92,19 @@
 </head>
 <body>
 
-  <!-- Top Bar -->
   <div class="topbar">
     <div class="home" onclick="goHome()">🏠</div>
     <div class="title">Loopix</div>
     <div style="width:26px;"></div>
   </div>
 
-  <!-- Controls -->
   <div class="controls">
     <span id="prev">⬅️</span>
     <span id="next">➡️</span>
   </div>
 
-  <!-- Player -->
   <div class="player" id="player"></div>
 
-  <!-- Footer -->
   <footer>
     © 2026 Loopix · Built with ❤️ by YAN
   </footer>
@@ -122,8 +113,10 @@
   const sheetCSV =
     "https://docs.google.com/spreadsheets/d/1nbJcDsxQ8XtRLyoHcoJoJJSGiV_ja7J5r_pgiFFuKms/export?format=csv";
 
-  let videos = [];
-  let index = 0;
+  let dateGroups = [];
+  let currentDateIndex = 0;
+  let history = [];
+  let historyIndex = -1;
 
   function goHome() {
     window.location.href = "https://yan-shun-081.github.io/yan-1-website.com/";
@@ -132,13 +125,38 @@
   fetch(sheetCSV)
     .then(res => res.text())
     .then(text => {
-      videos = text
+      const rows = text
         .split("\n")
-        .map(row => row.replace(/"/g, "").trim())
-        .filter(row => row !== "");
+        .map(r => r.replace(/"/g, "").trim())
+        .filter(r => r !== "");
 
-      if (videos.length) loadVideo(index);
+      const map = {};
+
+      rows.forEach(row => {
+        const [url, date] = row.split(",");
+        if (!url || !date) return;
+
+        if (!map[date]) map[date] = [];
+        map[date].push(url);
+      });
+
+      dateGroups = Object.keys(map)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .map(date => ({
+          date,
+          videos: shuffle([...map[date]])
+        }));
+
+      playNext();
     });
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
 
   function toEmbed(url) {
     if (url.includes("dai.ly/")) {
@@ -148,12 +166,10 @@
     return url;
   }
 
-  function loadVideo(i) {
-    const embedURL = toEmbed(videos[i]);
-
+  function loadVideo(url) {
     document.getElementById("player").innerHTML = `
       <iframe
-        src="${embedURL}"
+        src="${toEmbed(url)}"
         allowfullscreen
         allow="autoplay; web-share"
         title="Dailymotion Video">
@@ -161,17 +177,31 @@
     `;
   }
 
-  document.getElementById("next").onclick = () => {
-    if (index < videos.length - 1) {
-      index++;
-      loadVideo(index);
+  function playNext() {
+    if (currentDateIndex >= dateGroups.length) return;
+
+    const group = dateGroups[currentDateIndex];
+
+    if (group.videos.length === 0) {
+      currentDateIndex++;
+      playNext();
+      return;
     }
+
+    const video = group.videos.pop();
+    history.push(video);
+    historyIndex++;
+    loadVideo(video);
+  }
+
+  document.getElementById("next").onclick = () => {
+    playNext();
   };
 
   document.getElementById("prev").onclick = () => {
-    if (index > 0) {
-      index--;
-      loadVideo(index);
+    if (historyIndex > 0) {
+      historyIndex--;
+      loadVideo(history[historyIndex]);
     }
   };
 </script>
