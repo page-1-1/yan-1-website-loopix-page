@@ -148,11 +148,15 @@
       }
     }
 
-    const videoUrl = getQueryParam("url");
+    // Get the 'link' parameter instead of 'url'
+    const encodedLink = getQueryParam("link");
     const playerDiv = document.getElementById("player");
 
-    if (videoUrl) {
+    if (encodedLink) {
+      // Decode the URL
+      const videoUrl = decodeURIComponent(encodedLink);
       const embedUrl = convertToEmbed(videoUrl);
+      
       if (embedUrl) {
         const iframe = document.createElement("iframe");
         iframe.src = embedUrl;
