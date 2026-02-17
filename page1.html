@@ -2,98 +2,181 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Loopix</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Player</title>
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
 
-    body {
-        background: #000;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-    }
+body {
+  background: #000;
+  color: white;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
 
-    iframe {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        border: none;
-    }
+/* Top Bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  position: relative;
+}
 
-    .error {
-        color: white;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin-top: 20%;
-        font-size: 18px;
-    }
+.home {
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+  left: 20px;
+}
+
+.title {
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Center Content */
+.center-content {
+  text-align: center;
+}
+
+.tagline {
+  margin-top: 10px;
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.continue-btn {
+  margin-top: 25px;
+  padding: 10px 25px;
+  font-size: 16px;
+  border: none;
+  border-radius: 25px;
+  background: white;
+  color: black;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.continue-btn:hover {
+  background: #ddd;
+}
+
+/* Player */
+#player {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none;
+}
+
+iframe {
+  width: 100vw;
+  height: 100vh;
+  border: none;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 13px;
+  opacity: 0.7;
+}
 </style>
 </head>
 
 <body>
 
-<div id="playerContainer"></div>
+<div class="top-bar">
+  <div class="home" onclick="openHome()">🏠</div>
+  <div class="title">Loopix</div>
+</div>
+
+<div class="center-content">
+  <div class="tagline">✨ Scroll. Watch. Enjoy.</div>
+  <button class="continue-btn" onclick="startVideo()">Continue</button>
+</div>
+
+<div id="player"></div>
+
+<div class="footer">
+  © 2026 Loopix · Built with ❤️ by YAN
+</div>
 
 <script>
+function openHome() {
+  window.open("https://yan-shun-081.github.io/yan-1-website.com/", "_blank");
+}
+
 function getQueryParam(name) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(name);
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
 }
 
-function extractVideoId(url) {
-    try {
-        const decodedUrl = decodeURIComponent(url);
+function convertToEmbed(url) {
+  try {
+    let videoId = null;
 
-        // Support dai.ly short links
-        if (decodedUrl.includes("dai.ly")) {
-            return decodedUrl.split("/").pop();
-        }
-
-        // Support full dailymotion links
-        if (decodedUrl.includes("dailymotion.com/video/")) {
-            return decodedUrl.split("/video/")[1].split("_")[0];
-        }
-
-        return null;
-    } catch (e) {
-        return null;
+    const shortMatch = url.match(/dai\.ly\/([^_?]+)/);
+    if (shortMatch && shortMatch[1]) {
+      videoId = shortMatch[1];
     }
+
+    const fullMatch = url.match(/video\/([^_?]+)/);
+    if (!videoId && fullMatch && fullMatch[1]) {
+      videoId = fullMatch[1];
+    }
+
+    if (videoId) {
+      return "https://www.dailymotion.com/embed/video/" + videoId + "?autoplay=1";
+    }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
 }
 
-function loadVideo() {
-    const linkParam = getQueryParam("link");
+function startVideo() {
+  const videoUrl = getQueryParam("url");
+  const playerDiv = document.getElementById("player");
 
-    if (!linkParam) {
-        document.body.innerHTML = '<div class="error">No video link provided</div>';
-        return;
+  if (videoUrl) {
+    const embedUrl = convertToEmbed(videoUrl);
+    if (embedUrl) {
+      document.querySelector(".top-bar").style.display = "none";
+      document.querySelector(".center-content").style.display = "none";
+      document.querySelector(".footer").style.display = "none";
+
+      playerDiv.style.display = "block";
+
+      const iframe = document.createElement("iframe");
+      iframe.src = embedUrl;
+      iframe.allow = "autoplay; fullscreen";
+      iframe.allowFullscreen = true;
+      playerDiv.appendChild(iframe);
+    } else {
+      alert("Invalid Dailymotion URL");
     }
-
-    const videoId = extractVideoId(linkParam);
-
-    if (!videoId) {
-        document.body.innerHTML = '<div class="error">Invalid Dailymotion link</div>';
-        return;
-    }
-
-    const embedUrl = `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1`;
-
-    const iframe = document.createElement("iframe");
-    iframe.src = embedUrl;
-    iframe.allow = "autoplay; fullscreen";
-    iframe.allowFullscreen = true;
-
-    document.getElementById("playerContainer").appendChild(iframe);
+  } else {
+    alert("No video URL provided");
+  }
 }
-
-loadVideo();
 </script>
 
 </body>
