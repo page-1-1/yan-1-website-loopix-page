@@ -17,21 +17,22 @@
       height: 100vh;
       width: 100vw;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       font-family: sans-serif;
       color: white;
-      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas: 
+        "header"
+        "video"
+        "footer";
     }
 
     .header {
-      position: absolute;
-      top: 20px;
-      left: 20px;
+      grid-area: header;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      padding: 20px;
       z-index: 10;
     }
 
@@ -41,29 +42,22 @@
       cursor: pointer;
     }
 
-    .site-title {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+    .site-title-top {
       font-size: 24px;
       font-weight: bold;
+      text-align: center;
+      flex-grow: 1;
     }
 
     .tagline {
-      position: absolute;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 18px;
       text-align: center;
+      font-size: 18px;
+      padding: 10px 0;
     }
 
     .continue-btn {
-      position: absolute;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
+      display: block;
+      margin: 10px auto;
       background: #ff2d55;
       color: white;
       border: none;
@@ -76,13 +70,25 @@
 
     .continue-btn:hover {
       background: #ff0033;
-      transform: translateX(-50%) scale(1.05);
+      transform: scale(1.05);
+    }
+
+    .video-container {
+      grid-area: video;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      padding: 0 20px;
     }
 
     iframe {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
+      max-width: 1200px;
       border: none;
+      border-radius: 8px;
     }
 
     .error {
@@ -92,26 +98,27 @@
     }
 
     .footer {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      grid-area: footer;
+      text-align: center;
       font-size: 14px;
       color: #aaa;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <a href="https://yan-shun-081.github.io/yan-1-website.com/" target="_blank" class="home-link">🏠</a>
-    <div class="site-title">Loopix</div>
+    <div class="site-title-top">Loopix</div>
+    <div style="width:30px;"></div> <!-- Spacer for alignment -->
   </div>
 
   <div class="tagline">✨ Scroll. Watch. Enjoy.</div>
-  
   <button class="continue-btn" onclick="window.location.href='index.html'">Continue</button>
 
-  <div id="player"></div>
+  <div class="video-container">
+    <div id="player"></div>
+  </div>
 
   <div class="footer">© 2026 Loopix · Built with ❤️ by YAN</div>
 
