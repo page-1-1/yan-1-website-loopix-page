@@ -37,6 +37,15 @@
       text-shadow: 0 0 10px rgba(56,189,248,.6);
     }
 
+    .subtitle {
+      font-size: 18px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+
     .controls {
       font-size: 30px;
       margin: 10px 0;
@@ -84,6 +93,10 @@
         font-size: 22px;
       }
 
+      .subtitle {
+        font-size: 16px;
+      }
+
       .controls {
         font-size: 28px;
       }
@@ -98,9 +111,12 @@
     <div style="width:26px;"></div>
   </div>
 
+  <div class="subtitle">✨ Scroll. Watch. Enjoy.</div>
+
   <div class="controls">
     <span id="prev">⬅️</span>
     <span id="next">➡️</span>
+    <span id="share">ᯓ➤</span>
   </div>
 
   <div class="player" id="player"></div>
@@ -117,6 +133,7 @@
   let currentDateIndex = 0;
   let history = [];
   let historyIndex = -1;
+  let currentUrl = "";
 
   function goHome() {
     window.location.href = "https://yan-shun-081.github.io/yan-1-website.com/";
@@ -167,6 +184,7 @@
   }
 
   function loadVideo(url) {
+    currentUrl = url;
     document.getElementById("player").innerHTML = `
       <iframe
         src="${toEmbed(url)}"
@@ -202,6 +220,38 @@
     if (historyIndex > 0) {
       historyIndex--;
       loadVideo(history[historyIndex]);
+    }
+  };
+
+  document.getElementById("share").onclick = async () => {
+    if (!currentUrl) return;
+
+    const shareUrl = `https://page-1-1.github.io/yan-1-website-loopix-page/page1.html?link=${encodeURIComponent(currentUrl)}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Check out this video',
+          url: shareUrl
+        });
+      } catch (err) {
+        console.error('Sharing failed:', err);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link copied to clipboard!');
+      } catch (err) {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = shareUrl;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('Link copied to clipboard!');
+      }
     }
   };
 </script>
